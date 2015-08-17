@@ -3,17 +3,19 @@
  */
 "use strict";
 
-function StreamReader(stream, maxSize){
+function StreamReader(stream){
     var closed;
     var waiting = [];
 
     function onReadable(){
         let cb;
         while(waiting.length > 0){
-            let data = stream.read(maxSize);
+            let data = stream.read();
             if (data != null){
                 cb = waiting.shift();
-                cb(data);
+                cb(null, data);
+            } else {
+                break;
             }
         }
     }
@@ -25,17 +27,20 @@ function StreamReader(stream, maxSize){
             waiting.push(cb);
             return;
         }
-        var data = stream.read(maxSize);
+        var data = stream.read();
         if (data){
             return cb(null, data);
         }
         waiting.push(cb);
         stream.once('readable', onReadable);
     }
-    stream.on('close', function(){
-        closed = new Error("Stream closed");
+    function onClose(){
+        closed = closed || new Error("Stream closed");
         waiting.forEach(cb=>cb(closed));
-    })
+        waiting = [];
+    }
+    stream.on('close', onClose);
+    stream.on('error', onClose);
     return read;
 }
 module.exports = StreamReader;

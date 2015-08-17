@@ -9,3 +9,5 @@ function UTFString(write){
         write(new Buffer(str), cb);
     }
 }
+
+module.exports = UTFString;

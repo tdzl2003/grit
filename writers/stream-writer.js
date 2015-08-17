@@ -14,10 +14,12 @@ function StreamWriter(stream, maxBufSize){
         buffering += len;
         stream.write(buf, function(err){
             buffering -= len;
-            cb(err);
+            cb && cb(err);
         });
     }
     return write;
 }
-
+StreamWriter.wrap = function(maxSize){
+    return s=>StreamWriter(s, maxSize);
+}
 module.exports = StreamWriter;
