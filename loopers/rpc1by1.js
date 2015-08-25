@@ -8,12 +8,12 @@ var co = require("co");
 function *worker(read, write, processor){
     for(;;){
         var req = yield read;
-        yield cb=>processor(req, function(err, resp){
-            if (err){
-                cb(err);
-            } else {
-                return write(resp, cb);
-            }
+        yield * processor(req, function(data){
+            return new Promise((resolve, reject)=>{
+                write(data, (err, result)=>{
+                    err ? reject(err):resolve(result);
+                })
+            })
         });
     }
 }

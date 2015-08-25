@@ -4,6 +4,7 @@
 "use strict";
 
 var stream = require('stream');
+var process = require('process');
 
 function TrunkStream(read){
     function createStream(cb){
@@ -18,9 +19,10 @@ function TrunkStream(read){
                 })
             }
         });
-        ret.on('end', ()=>cb());
-
-        return ret;
+        //ret.on('end', ()=>cb());
+        process.nextTick(()=>{
+            cb(null, ret);
+        })
     }
     return createStream;
 }

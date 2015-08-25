@@ -12,11 +12,12 @@ function TrunkStream(write){
                 write(chunk, next);
             }
         });
-        ret.once('finish', ()=>{
-            write(null, cb);
-        });
-
-        return ret;
+        ret.on('finish', function(){
+            write(null);
+        })
+        process.nextTick(()=>{
+            cb(null, ret);
+        })
     }
     return createStream;
 }
