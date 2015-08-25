@@ -1,4 +1,7 @@
 /**
+ * Created by Yun on 2015-08-25.
+ */
+/**
  * Created by tdzl2_000 on 2015-08-13.
  */
 "use strict";
@@ -15,14 +18,14 @@ function *worker(read, write, processor){
     }
     for(;;){
         var req = yield read;
-        // execute processor and wait for it to finish.
+        // execute processor, but does not wait for it.
         // processor should return a promise.
-        yield processor(req, writeP);
+        processor(req, writeP);
     }
 }
 
-function rpc1by1(read, write, processor){
+function free(read, write, processor){
     return co(worker(read, write, processor));
 }
 
-module.exports = rpc1by1;
+module.exports = free;
