@@ -6,10 +6,10 @@
 var stream = require('stream');
 
 function TrunkStream(read){
-    function createStream(_, cb){
+    function createStream(cb){
         let ret = new stream.Readable({
-            _read() {
-                read(function(err, data){
+            read() {
+                read((err, data)=>{
                     if (err){
                         this.emit('error', err);
                     } else {
@@ -18,6 +18,7 @@ function TrunkStream(read){
                 })
             }
         });
+        ret.on('end', ()=>cb());
 
         return ret;
     }

@@ -14,7 +14,7 @@ function PacketNLE(read, byteOfLen, maxLength){
         }
         if (length == 0){
             length = -1;
-            return cb();
+            return cb(null, null);
         } else if (length > 0 && buf.length >= length){
             let ret = buf.slice(0, length);
             buf = buf.slice(length);
