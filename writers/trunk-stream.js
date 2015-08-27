@@ -6,10 +6,7 @@
 var stream = require('stream');
 
 function TrunkStream(write){
-    function createStream(_, cb){
-        if (typeof(_) == 'function'){
-            cb = _;
-        }
+    function createStream(cb){
         let wstream = new stream.Writable({
             write: function(chunk, encoding, next) {
                 write(chunk, next);
