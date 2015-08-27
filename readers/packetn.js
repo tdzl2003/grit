@@ -7,30 +7,33 @@ function PacketNLE(read, byteOfLen, maxLength){
     var length = -1;
     var buf = new Buffer(0);
 
-    function readPacket(cb){
-        if (length < 0 && buf.length >= byteOfLen){
+    function readPacket(resolve, reject){
+        if (length < 0 && buf.length >= byteOfLen) {
             length = buf.readUIntLE(0, byteOfLen, true);
             buf = buf.slice(byteOfLen);
         }
-        if (length == 0){
+        if (length == 0) {
             length = -1;
-            return cb(null, null);
-        } else if (length > 0 && buf.length >= length){
+            return resolve(null);
+        } else if (length > 0 && buf.length >= length) {
             let ret = buf.slice(0, length);
             buf = buf.slice(length);
             length = -1;
-            return cb(null, ret);
+            return resolve(ret);
         }
-        read((err, data)=>{
-            if (err){
-                return cb(err);
-            }
+        read().then(data=>{
             buf = Buffer.concat([buf, data]);
-            readPacket(cb);
-        })
+            readPacket(resolve, reject)
+        }, err=>reject(err));
     }
 
-    return readPacket;
+    return cb=>{
+        var ret = new Promise(readPacket);
+        if (cb){
+            ret.then((v)=> cb(null, v), (e)=>cb(e));
+        }
+        return ret;
+    };
 }
 PacketNLE.wrap = function(byteOfLen, maxLength){
     return read=>PacketNLE(read, byteOfLen, maxLength);

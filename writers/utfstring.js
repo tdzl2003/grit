@@ -6,7 +6,7 @@
 
 function UTFString(write){
     return function(str, cb){
-        write(new Buffer(str), cb);
+        return write(new Buffer(str), cb);
     }
 }
 

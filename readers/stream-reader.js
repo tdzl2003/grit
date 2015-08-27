@@ -5,42 +5,38 @@
 
 function StreamReader(stream){
     var closed;
-    var waiting = [];
+    var waiting = null;
 
-    function onReadable(){
-        let cb;
-        while(waiting.length > 0){
-            let data = stream.read();
-            if (data != null){
-                cb = waiting.shift();
-                cb(null, data);
-            } else {
-                break;
-            }
-        }
-    }
-    function read(cb){
+    function read(resolve, reject){
         if (closed){
-            return cb(closed);
+            return reject(closed);
         }
-        if (waiting.length){
-            waiting.push(cb);
-            return;
-        }
+
         var data = stream.read();
         if (data){
-            return cb(null, data);
+            console.log(data);
+            resolve(data);
         }
-        waiting.push(cb);
-        stream.once('readable', onReadable);
+
+        waiting = reject;
+        stream.once('readable', ()=>{
+            waiting = null;
+            resolve(stream.read());
+        });
     }
     function onClose(){
         closed = closed || new Error("Stream closed");
-        waiting.forEach(cb=>cb(closed));
-        waiting = [];
+        waiting && waiting(closed);
+        waiting = null;
     }
     stream.on('close', onClose);
     stream.on('error', onClose);
-    return read;
+    return cb=>{
+        var ret = new Promise(read);
+        if (cb){
+            ret.then((v)=> cb(null, v), (e)=>cb(e));
+        }
+        return ret;
+    };
 }
 module.exports = StreamReader;

@@ -7,17 +7,22 @@ var stream = require('stream');
 
 function TrunkStream(write){
     function createStream(_, cb){
-        let ret = new stream.Writable({
+        if (typeof(_) == 'function'){
+            cb = _;
+        }
+        let wstream = new stream.Writable({
             write: function(chunk, encoding, next) {
                 write(chunk, next);
             }
         });
-        ret.on('finish', function(){
+        wstream.on('finish', function(){
             write(null);
-        })
-        process.nextTick(()=>{
-            cb(null, ret);
-        })
+        });
+        let ret = Promise.resolve(wstream);
+        if (cb){
+            ret.then(v=>cb(null, v));
+        }
+        return ret;
     }
     return createStream;
 }

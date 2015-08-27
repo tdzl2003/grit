@@ -4,14 +4,17 @@
 
 "use strict";
 function UTFString(read){
-    return function(cb){
-        read(function(err, buf){
-            if (err){
-                cb(err);
-            } else {
-                cb(null, buf ? buf.toString(): "");
-            }
-        })
+    return function(cb) {
+        let ret = new Promise((resolve, reject)=> {
+            read().then(
+                buf=>resolve(buf ? buf.toString() : ""),
+                reject)
+        });
+        if (cb) {
+            ret.then((v)=> cb(null, v), (e)=>cb(e));
+        }
+        ret.then(v=>console.log(v));
+        return ret;
     }
 }
 

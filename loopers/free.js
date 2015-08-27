@@ -9,18 +9,11 @@
 var co = require("co");
 
 function *worker(sess, read, write, processor){
-    function writeP(data){
-        return new Promise((resolve, reject)=>{
-            write(data, (err, result)=>{
-                err ? reject(err):resolve(result);
-            })
-        })
-    }
     for(;;){
         var req = yield read;
         // execute processor, but does not wait for it.
         // processor should return a promise.
-        processor(sess, req, writeP);
+        processor(sess, req, write);
     }
 }
 

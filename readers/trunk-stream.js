@@ -8,21 +8,19 @@ var process = require('process');
 
 function TrunkStream(read){
     function createStream(cb){
-        let ret = new stream.Readable({
+        let rstream = new stream.Readable({
             read() {
-                read((err, data)=>{
-                    if (err){
-                        this.emit('error', err);
-                    } else {
-                        this.push(data);    //push null when empty packet received.
-                    }
-                })
+                read().then(
+                    data=>this.push(data),
+                    err=>this.emit('error', err)
+                );
             }
         });
-        //ret.on('end', ()=>cb());
-        process.nextTick(()=>{
-            cb(null, ret);
-        })
+        let ret = Promise.resolve(rstream);
+        if (cb){
+            ret.then((v)=> cb(null, v));
+        }
+        return ret;
     }
     return createStream;
 }

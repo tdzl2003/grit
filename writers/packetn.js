@@ -10,16 +10,23 @@ function PacketNLE(write, byteOfLen, maxLength){
 
     function writePacket(buf, cb){
         if (!buf || buf.length == 0){
-            write(lenZero, cb);
-            return;
+            return write(lenZero, cb);
         }
         if (buf.length > maxLength){
-            return cb(new Error("maxLength exceeded."));
+            let ret = Promise.reject(new Error("maxLength exceeded."));
+            if (cb) {
+                ret.catch(cb);
+            }
+            return ret;
         }
         var lenBuf = new Buffer(byteOfLen);
         lenBuf.writeUIntLE(buf.length, 0, byteOfLen);
         write(lenBuf);
-        write(buf, cb);
+        let ret = write(buf);
+        if (cb){
+            ret.then((v)=>cb(null, v), (e)=>cb(e));
+        }
+        return ret;
     }
     return writePacket;
 }

@@ -6,16 +6,22 @@
 function StreamWriter(stream, maxBufSize){
     var buffering = 0;
     function write(buf, cb){
-        var len = buf.length;
-        if (buffering + len > maxBufSize){
-            stream.destroy();
-            return;
-        }
-        buffering += len;
-        stream.write(buf, function(err){
-            buffering -= len;
-            cb && cb(err);
+        let ret = new Promise((resolve,reject)=>{
+            var len = buf.length;
+            if (buffering + len > maxBufSize){
+                stream.destroy();
+                return reject("Writing buffer overflow.");
+            }
+            buffering += len;
+            stream.write(buf, function(err){
+                buffering -= len;
+                err?reject(err):resolve();
+            });
         });
+        if (cb){
+            ret.then((v)=> cb(null, v), (e)=>cb(e));
+        }
+        return ret;
     }
     return write;
 }
