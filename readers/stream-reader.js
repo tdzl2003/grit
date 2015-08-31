@@ -3,6 +3,8 @@
  */
 "use strict";
 
+var assert = require("assert");
+
 function StreamReader(stream){
     var closed;
     var waiting = null;
@@ -17,6 +19,7 @@ function StreamReader(stream){
             console.log(data);
             resolve(data);
         }
+        assert(waiting == null);
 
         waiting = reject;
         stream.once('readable', ()=>{
@@ -26,8 +29,9 @@ function StreamReader(stream){
     }
     function onClose(){
         closed = closed || new Error("Stream closed");
-        waiting && waiting(closed);
+        let p = waiting;
         waiting = null;
+        p && p(closed);
     }
     stream.on('close', onClose);
     stream.on('error', onClose);
