@@ -13,7 +13,7 @@ function *worker(sess, read, write, processor){
         var req = yield read;
         // execute processor, but does not wait for it.
         // processor should return a promise.
-        processor(sess, req, write);
+        processor(sess, req, write).catch(e=>console.error(e.stack));
     }
 }
 
